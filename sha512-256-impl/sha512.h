@@ -149,6 +149,15 @@ public:
   }
 
 public:
+  /**
+   * Calculates the SHA512 for nothing.
+   * @return str_t
+   */
+  static str_t calculate()
+  {
+    basic_sha512 r;
+    return r.final_data();
+  }
 
   /**
    * Calculates the SHA256 for a given string.

@@ -60,8 +60,10 @@ public:
   /**
    * Clear/reset all internal buffers and states.
    */
+  template <int BITS=256>
   static str_t calculate(const void* data, size_t size)
-    { basic_sha512_256 r; r.update(data, size); return r.final_data().substr(0,64); }
+    { basic_sha512_256 r; r.update(data, size); return r.final_data().substr(0,BITS/4); }
+
   private:
     static const uint64_t initial_[8];
   };
