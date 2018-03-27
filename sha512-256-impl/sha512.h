@@ -50,22 +50,17 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "types.hpp"
+
 namespace sw { namespace detail {
 
 /**
  * @class basic_sha512
  * @template
  */
-template <typename Char_Type=char>
+template <typename Output_T=HexStringOutput>
 class basic_sha512
 {
-public:
-
-  /**
-   * Types
-   */
-  typedef std::basic_string<Char_Type> str_t;
-
 public:
 
   /**
@@ -95,12 +90,12 @@ public:
 
   /**
    * Push new binary data into the internal buf_ and recalculate the checksum.
-   * @param const void* data
+   * @param const void* const data
    * @param size_t size
    */
-  void update(const void* data, size_t size)
+  void update(const void* const data, size_t size)
   {
-    unsigned nb, n, n_tail;
+    size_t nb, n, n_tail;
     const uint8_t *p;
     n = 128 - sz_;
     n_tail = size < n ? size : n;
@@ -119,9 +114,9 @@ public:
 
   /**
    * Finanlise checksum, return hex string.
-   * @return str_t
+   * @return Output_T
    */
-  str_t final_data()
+  Output_T final_data()
   {
     #if (defined (BYTE_ORDER)) && (defined (BIG_ENDIAN)) && ((BYTE_ORDER == BIG_ENDIAN))
     #define U32_B(x,b) *((b)+0)=(uint8_t)((x)); *((b)+1)=(uint8_t)((x)>>8); \
@@ -139,12 +134,9 @@ public:
     block_[sz_] = 0x80;
     U32_B(n_total, block_ + n-4);
     transform(block_, nb);
-    std::basic_stringstream<Char_Type> ss; // hex string
-    for (unsigned i = 0; i < 8; ++i) {
-      ss << std::hex << std::setfill('0') << std::setw(16) << (sum_[i]);
-    }
+    std::string hexStr = Output_T::format(binary_string());
     clear(initial_);
-    return ss.str();
+    return hexStr;
     #undef U32_B
   }
 
@@ -153,7 +145,7 @@ public:
    * Calculates the SHA512 for nothing.
    * @return str_t
    */
-  static str_t calculate()
+  static Output_T calculate()
   {
     basic_sha512 r;
     return r.final_data();
@@ -161,10 +153,11 @@ public:
 
   /**
    * Calculates the SHA256 for a given string.
-   * @param const str_t & s
-   * @return str_t
+   * @param const std::basic_string<T> & s
+   * @return Output_T
    */
-  static str_t calculate(const str_t & s)
+   template <typename T>
+  static Output_T calculate(const std::basic_string<T> & s)
   {
     basic_sha512 r;
     r.update(s.data(), s.length());
@@ -176,7 +169,7 @@ public:
    * @param const char* s
    * @return str_t
    */
-  static str_t calculate(const void* data, size_t size)
+  static Output_T calculate(const void* data, size_t size)
   { basic_sha512 r; r.update(data, size); return r.final_data(); }
 
   /**
@@ -184,14 +177,14 @@ public:
    * @param std::istream & is
    * @return str_t
    */
-  static str_t calculate(std::istream & is)
+  static Output_T calculate(std::istream & is)
   {
     basic_sha512 r;
     char data[64];
     while(is.good() && is.read(data, sizeof(data)).good()) {
       r.update(data, sizeof(data));
     }
-    if(!is.eof()) return str_t();
+    if(!is.eof()) return Output_T();
     if(is.gcount()) r.update(data, is.gcount());
     return r.final_data();
   }
@@ -202,11 +195,11 @@ public:
    * @param bool binary = true
    * @return str_t
    */
-  static str_t file(const str_t & path, bool binary=true)
+  static Output_T file(const std::string & path, bool binary=true)
   {
     std::ifstream fs;
     fs.open(path.c_str(), binary ? (std::ios::in|std::ios::binary) : (std::ios::in));
-    str_t s = calculate(fs);
+    Output_T s = calculate(fs);
     fs.close();
     return s;
   }
@@ -215,7 +208,8 @@ private:
 
   /**
    * Performs the SHA256 transformation on a given block
-   * @param uint32_t *block
+   * @param const uint8_t *block
+   * @param size_t size
    */
   void transform(const uint8_t *data, size_t size)
   {
@@ -265,10 +259,10 @@ private:
   }
 
 private:
-  static const uint64_t initial_[8];
+  static const binary_512_t initial_;
   uint64_t iterations_; // Number of iterations
   uint64_t sum_[8];     // Intermediate checksum buffer
-  unsigned sz_;         // Number of currently stored bytes in the block
+  size_t sz_;         // Number of currently stored bytes in the block
   uint8_t  block_[256];
   static const uint64_t lut_[80]; // Lookup table
 };
