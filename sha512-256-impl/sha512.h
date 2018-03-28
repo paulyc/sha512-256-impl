@@ -1,6 +1,7 @@
 /**
  * @file sha512.hh
  * @author Stefan Wilhelm (stfwi)
+ * @author Paul Ciarlo (paulyc)
  * @ccflags
  * @ldflags
  * @platform linux, bsd, windows
@@ -11,7 +12,8 @@
  * -------------------------------------------------------------------------------------
  * +++ BSD license header +++
  * Copyright (c) 2010, 2012, Stefan Wilhelm (stfwi, <cerbero s@atwilly s.de>)
- * All rights reserved.
+ * Copyright (c) 2018 Paul Ciarlo <paul.ciarlo@gmail.com>
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met: (1) Redistributions
  * of source code must retain the above copyright notice, this list of conditions
