@@ -35,6 +35,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5F074DF3206BE7CB007A8482 /* deps */ = {isa = PBXFileReference; lastKnownFileType = folder; path = deps; sourceTree = "<group>"; };
+		5F074DF5206BE998007A8482 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; path = include; sourceTree = "<group>"; };
 		5F1A84541FE0B3B3007A8482 /* sha512-256-impl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "sha512-256-impl"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F1A84571FE0B3B3007A8482 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5F1A845E1FE0B52F007A8482 /* test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
@@ -69,6 +71,8 @@
 		5F1A844B1FE0B3B3007A8482 = {
 			isa = PBXGroup;
 			children = (
+				5F074DF5206BE998007A8482 /* include */,
+				5F074DF3206BE7CB007A8482 /* deps */,
 				5F1A84561FE0B3B3007A8482 /* sha512-256-impl */,
 				5F1A84551FE0B3B3007A8482 /* Products */,
 			);
