@@ -54,7 +54,7 @@ class HexStringFormatter {
 protected:
     static constexpr char digitLut[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     
-    static void dumpByte(std::ostringstream &ss, uint8_t byte) {
+    static void dumpByte(std::ostringstream &ss, const uint8_t byte) {
         ss << digitLut[(byte & 0xf0) >> 4];
         ss << digitLut[byte & 0x0f];
     }
@@ -64,10 +64,10 @@ public:
 
 class HexStringFormatterBE : public HexStringFormatter {
 public:
-    static Output_T format(uint8_t *in_, int len_bytes, int word_size_bytes) {
+    static Output_T format(const uint8_t *const in_, int len_bytes, int word_size_bytes) {
         std::ostringstream ss; // hex string
         assert(len_bytes % word_size_bytes == 0);
-        for (uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
+        for (const uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
             for (int j = word_size_bytes - 1; j >= 0; --j) {
                 dumpByte(ss, word[j]);
             }
@@ -78,10 +78,10 @@ public:
 
 class HexStringFormatterLE : public HexStringFormatter {
 public:
-    static Output_T format(uint8_t *in_, int len_bytes, int word_size_bytes) {
+    static Output_T format(const uint8_t *const in_, int len_bytes, int word_size_bytes) {
         std::ostringstream ss; // hex string
         assert(len_bytes % word_size_bytes == 0);
-        for (uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
+        for (const uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
             for (int j = 0; j < word_size_bytes; ++j) {
                 dumpByte(ss, word[j]);
             }
@@ -90,13 +90,13 @@ public:
     }
 };
 
-class BinaryStringOutputter {
+class BinaryStringFormatter {
 public:
     typedef binary_string Output_T;
-    static Output_T format(const uint8_t *const in_, unsigned len_bytes) {
+    static Output_T format(const uint8_t *const in_, int len_bytes, int word_size_bytes=0) {
         binary_string out;
         out.resize(len_bytes);
-        for (unsigned i = 0; i < len_bytes; ++i) {
+        for (int i = 0; i < len_bytes; ++i) {
             out[i] = in_[i];
         }
         return out;
