@@ -361,7 +361,7 @@ h6 = feba5c22ed8a5af8
 h7 = 77bf7de117dcac6d
 */
   void testMessage512() {
-    sw::sha512::str_t sha512hash = sw::sha512::calculate(message, 256);
+    sw::sha512::Output_T sha512hash = sw::sha512::calculate(message, 256);
     CPPUNIT_ASSERT_EQUAL(std::string("\
 1e7b80bc8edc552c\
 8feeb2780e111477\
@@ -374,7 +374,7 @@ feba5c22ed8a5af8\
 }
 
 void testMessage512_256_full() {
-  sw::sha512_256::str_t hash512 = sw::sha512_256::calculate<512>(message, 256);
+  sw::sha512_256::Output_T hash512 = sw::sha512_256::calculate512(message, 256);
   CPPUNIT_ASSERT_EQUAL(std::string("\
 4ff7ecb3e7c23b55\
 9974eba17a3d1a62\
@@ -391,14 +391,14 @@ bf2abd3732fdf66a"), hash512);
 }
 
 void testMessage512_256() {
-  sw::sha512_256::str_t hash512_256 = sw::sha512_256::calculate(message, 256);
+  sw::sha512_256::Output_T hash512_256 = sw::sha512_256::calculate(message, 256);
   CPPUNIT_ASSERT_EQUAL(std::string("\
 4ff7ecb3e7c23b55\
 9974eba17a3d1a62\
 0504f18be2e472ea\
 c5c5cbf75b3b7550"), hash512_256);
 
-  hash512_256 = sw::sha512_256::calculate<256>(message, 256);
+  hash512_256 = sw::sha512_256::calculate(message, 256);
   CPPUNIT_ASSERT_EQUAL(std::string("\
 4ff7ecb3e7c23b55\
 9974eba17a3d1a62\

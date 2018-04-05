@@ -11,19 +11,7 @@
 #ifndef MD5_HH
 #define	MD5_HH
 
-#if defined(OS_WIN) || defined (_WINDOWS_) || defined(_WIN32) || defined(__MSC_VER)
-#include <stdint.h>
-#else
-#include <inttypes.h>
-#endif
-#include <sstream>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
+#include "types.hpp"
 
 namespace sw { namespace detail {
 
@@ -31,7 +19,7 @@ namespace sw { namespace detail {
  * @class basic_md5
  * @template
  */
-template <typename Char_Type=char>
+template <typename Formatter_T=HexStringFormatterBE>
 class basic_md5
 {
 public:
@@ -39,7 +27,7 @@ public:
   /**
    * Types
    */
-  typedef std::basic_string<Char_Type> str_t;
+  typedef typename Formatter_T::Output_T Output_T;
 
 public:
 
@@ -91,7 +79,7 @@ public:
    * Finanlise checksum, return hex string.
    * @return str_t
    */
-  std::string final()
+  Output_T final_data()
   {
     #define U32_B(O_, I_, len) { \
       for (uint32_t i = 0, j = 0; j < len; i++, j += 4) { \
@@ -113,12 +101,9 @@ public:
     update(bits, 8); // Append length (before padding)
     uint8_t res[16];
     U32_B(res, sum_, 16); // Store state in digest
-    std::basic_stringstream<Char_Type> ss; // hex string
-    for (unsigned i = 0; i < 16; ++i) { // stream hex includes endian conversion
-      ss << std::hex << std::setfill('0') << std::setw(2) << (res[i] & 0xff);
-    }
+    Output_T output = Formatter_T::format((uint8_t*)sum_, 16, 1);
     clear();
-    return ss.str();
+    return output;
     #undef U32_B
   }
 
@@ -129,30 +114,30 @@ public:
    * @param const str_t & s
    * @return str_t
    */
-  static str_t calculate(const str_t & s)
-  { basic_md5 r; r.update(s.data(), s.length()); return r.final(); }
+  static Output_T calculate(const std::string & s)
+  { basic_md5 r; r.update(s.data(), s.length()); return r.final_data(); }
 
   /**
    * Calculates the MD5 for a given C-string.
    * @param const char* s
    * @return str_t
    */
-  static str_t calculate(const void* data, size_t size)
-  { basic_md5 r; r.update(data, size); return r.final(); }
+  static Output_T calculate(const void* data, size_t size)
+  { basic_md5 r; r.update(data, size); return r.final_data(); }
 
   /**
    * Calculates the MD5 for a stream. Returns an empty string on error.
    * @param std::istream & is
    * @return str_t
    */
-  static str_t calculate(std::istream & is)
+  static Output_T calculate(std::istream & is)
   {
     basic_md5 r;
     char data[64];
     while(is.good() && is.read(data, sizeof(data)).good()) {
       r.update(data, sizeof(data));
     }
-    if(!is.eof()) return str_t();
+    if(!is.eof()) return Output_T();
     if(is.gcount()) r.update(data, is.gcount());
     return r.final();
   }
@@ -163,11 +148,11 @@ public:
    * @param bool binary = true
    * @return str_t
    */
-  static str_t file(const str_t & path, bool binary=true)
+  static Output_T file(const std::string & path, bool binary=true)
   {
     std::ifstream fs;
     fs.open(path.c_str(), binary ? (std::ios::in|std::ios::binary) : (std::ios::in));
-    str_t s = calculate(fs);
+    Output_T s = calculate(fs);
     fs.close();
     return s;
   }

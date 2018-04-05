@@ -28,10 +28,21 @@
 #ifndef types_hpp
 #define types_hpp
 
-#include <string>
+#if defined(OS_WIN) || defined (_WINDOWS_) || defined(_WIN32) || defined(__MSC_VER)
+#include <inttypes.h>
+#else
+#include <stdint.h>
+#endif
 #include <sstream>
 #include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <cstring>
+#include <iomanip>
 #include <vector>
+#include <cassert>
 
 namespace sw { namespace detail {
 
@@ -39,24 +50,50 @@ typedef uint64_t binary_512_t[8];
 typedef uint64_t binary_256_t[4];
 typedef std::basic_string<uint8_t> binary_string;
 
-class HexStringOutput {
+class HexStringFormatter {
+protected:
+    static constexpr char digitLut[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    
+    static void dumpByte(std::ostringstream &ss, uint8_t byte) {
+        ss << digitLut[(byte & 0xf0) >> 4];
+        ss << digitLut[byte & 0x0f];
+    }
 public:
-    static std::string format(const uint8_t *const in_, unsigned len_bytes) {
+    typedef std::string Output_T;
+};
+
+class HexStringFormatterBE : public HexStringFormatter {
+public:
+    static Output_T format(uint8_t *in_, int len_bytes, int word_size_bytes) {
         std::ostringstream ss; // hex string
-        ss << std::hex << std::setfill('0') << std::setw(2);
-        for (unsigned i = 0; i < len_bytes; ++i) {
-          ss << in_[i];
+        assert(len_bytes % word_size_bytes == 0);
+        for (uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
+            for (int j = word_size_bytes - 1; j >= 0; --j) {
+                dumpByte(ss, word[j]);
+            }
         }
         return ss.str();
     }
-    static std::string truncate(std::string in_, unsigned out_bytes) {
-        return in_.substr(0, out_bytes*2);
+};
+
+class HexStringFormatterLE : public HexStringFormatter {
+public:
+    static Output_T format(uint8_t *in_, int len_bytes, int word_size_bytes) {
+        std::ostringstream ss; // hex string
+        assert(len_bytes % word_size_bytes == 0);
+        for (uint8_t *word = in_; word < in_ + len_bytes; word += word_size_bytes) {
+            for (int j = 0; j < word_size_bytes; ++j) {
+                dumpByte(ss, word[j]);
+            }
+        }
+        return ss.str();
     }
 };
 
-class BinaryStringOutput {
+class BinaryStringOutputter {
 public:
-    static binary_string format(const uint8_t *const in_, unsigned len_bytes) {
+    typedef binary_string Output_T;
+    static Output_T format(const uint8_t *const in_, unsigned len_bytes) {
         binary_string out;
         out.resize(len_bytes);
         for (unsigned i = 0; i < len_bytes; ++i) {
@@ -64,13 +101,8 @@ public:
         }
         return out;
     }
-    static binary_string truncate(binary_string in_, unsigned out_bytes) {
-        return in_.substr(0, out_bytes);
-    }
 };
 
 } }
-
-#include "types.cpp"
 
 #endif /* types_hpp */

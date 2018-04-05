@@ -44,10 +44,13 @@ h5      22         79         e360b596dc380c3f
 h6      23         83         1c456002ce13e9f8
 h7      24         89         6f19633143a0af0e
 */
-template <typename Output_T>
-class basic_sha512_256 : public basic_sha512<Output_T>
+template <typename Formatter_T>
+class basic_sha512_256 : public basic_sha512<Formatter_T>
 {
 public:
+
+  typedef typename Formatter_T::Output_T Output_T;
+
   basic_sha512_256() : sw::sha512() {
    sw::sha512::clear(initial_);
   }
@@ -55,7 +58,17 @@ public:
    * Clear/reset all internal buffers and states.
    */
   static Output_T calculate(const void* data, size_t size)
-    { basic_sha512_256 r; r.update(data, size); return Output_T::truncate(r.final_data(), 32); }
+    { basic_sha512_256 r; r.update(data, size); return r.final_data(); }
+    
+  static Output_T calculate512(const void* data, size_t size)
+    { basic_sha512_256 r; r.update(data, size); return r.final_data(512); }
+    
+  Output_T final_data(int out_bits=256)
+  {
+    binary_512_t raw;
+    basic_sha512<Formatter_T>::final_data_raw(raw);
+    return Formatter_T::format((uint8_t*)raw, out_bits/8, 64/8);
+  }
 
   private:
     static const uint64_t initial_[8];
@@ -70,7 +83,7 @@ public:
 }}
 
 namespace sw {
-  typedef detail::basic_sha512_256<detail::HexStringOutput> sha512_256;
+  typedef detail::basic_sha512_256<detail::HexStringFormatterBE> sha512_256;
 }
 
 #endif /* sha512_256_h */

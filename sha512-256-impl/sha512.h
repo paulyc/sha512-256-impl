@@ -39,19 +39,6 @@
 #ifndef SHA512_HH
 #define	SHA512_HH
 
-#if defined(OS_WIN) || defined (_WINDOWS_) || defined(_WIN32) || defined(__MSC_VER)
-#include <inttypes.h>
-#else
-#include <stdint.h>
-#endif
-#include <sstream>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <cstdlib>
-#include <cstring>
-
 #include "types.hpp"
 
 namespace sw { namespace detail {
@@ -60,10 +47,12 @@ namespace sw { namespace detail {
  * @class basic_sha512
  * @template
  */
-template <typename Output_T=HexStringOutput>
+template <typename Formatter_T=HexStringFormatterBE>
 class basic_sha512
 {
 public:
+
+  typedef typename Formatter_T::Output_T Output_T;
 
   /**
    * Constructor
@@ -118,7 +107,7 @@ public:
    * Finanlise checksum, return hex string.
    * @return Output_T
    */
-  Output_T final_data()
+  void final_data_raw(binary_512_t output)
   {
     #if (defined (BYTE_ORDER)) && (defined (BIG_ENDIAN)) && ((BYTE_ORDER == BIG_ENDIAN))
     #define U32_B(x,b) *((b)+0)=(uint8_t)((x)); *((b)+1)=(uint8_t)((x)>>8); \
@@ -136,10 +125,16 @@ public:
     block_[sz_] = 0x80;
     U32_B(n_total, block_ + n-4);
     transform(block_, nb);
-    std::string hexStr = Output_T::format(binary_string());
+    memcpy(output, sum_, 512/8);
     clear(initial_);
-    return hexStr;
     #undef U32_B
+  }
+  
+  Output_T final_data()
+  {
+    binary_512_t output;
+    final_data_raw(output);
+    return Formatter_T::format((uint8_t*)output, 512/8, 64/8);
   }
 
 public:
@@ -158,8 +153,7 @@ public:
    * @param const std::basic_string<T> & s
    * @return Output_T
    */
-   template <typename T>
-  static Output_T calculate(const std::basic_string<T> & s)
+  static Output_T calculate(const std::string & s)
   {
     basic_sha512 r;
     r.update(s.data(), s.length());
