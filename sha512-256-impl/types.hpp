@@ -52,7 +52,7 @@ typedef std::basic_string<uint8_t> binary_string;
 
 class HexStringFormatter {
 protected:
-    static constexpr char digitLut[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    constexpr static const char digitLut[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     
     static void dumpByte(std::ostringstream &ss, const uint8_t byte) {
         ss << digitLut[(byte & 0xf0) >> 4];
